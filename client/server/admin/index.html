@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Traffic Monitor</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { background: #080a0f; color: #00ffcc; font-family: monospace; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #00ffcc33; padding: 10px; text-align: left; }
+        th { background: #121824; }
+        .stats { font-size: 1.2rem; color: #ff0055; }
+    </style>
+</head>
+<body>
+    <h1>ADMIN LIVE TRAFFIC RADAR</h1>
+    <div class="stats">ACTIVE CONNECTIONS: <span id="totalUsers">0</span></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Anon ID</th>
+                <th>Socket ID</th>
+                <th>Exact Latitude</th>
+                <th>Exact Longitude</th>
+                <th>User Hint</th>
+                <th>Last Active</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+
+    <script>
+        const socket = io('http://localhost:3000');
+
+        socket.on('admin_user_list', (users) => {
+            document.getElementById('totalUsers').innerText = users.length;
+            const tbody = document.getElementById('userTable');
+            tbody.innerHTML = '';
+
+            users.forEach(u => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${u.id}</td>
+                        <td>${u.socketId}</td>
+                        <td>${u.lat}</td>
+                        <td>${u.lng}</td>
+                        <td>${u.hint}</td>
+                        <td>${u.timestamp}</td>
+                    </tr>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
