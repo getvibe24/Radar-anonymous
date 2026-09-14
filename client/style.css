@@ -1,84 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
-    background-color: #0b0e14;
-    color: #e0e6ed;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #05070a;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 255, 204, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 100%, rgba(255, 0, 85, 0.05) 0%, transparent 50%);
+    color: #f1f5f9;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
+    padding: 20px 10px;
+    overflow-x: hidden;
 }
 
+/* Glassmorphism Radar Container */
 .radar-container {
+    position: relative;
+    background: rgba(13, 17, 23, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     text-align: center;
-    background: #121824;
-    padding: 24px;
-    border-radius: 16px;
-    box-shadow: 0 0 30px rgba(0, 255, 204, 0.1);
-    border: 1px solid #00ffcc33;
-    width: 380px;
 }
 
+/* Sleek Header Title */
 h2 {
-    color: #00ffcc;
-    letter-spacing: 2px;
-    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+h2::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #00ffcc;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ffcc;
+}
+
+/* Segmented Control Range Buttons */
+.range-picker {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 22px;
 }
 
 .range-picker button {
     background: transparent;
-    border: 1px solid #00ffcc;
-    color: #00ffcc;
-    padding: 6px 14px;
-    border-radius: 20px;
+    border: none;
+    color: #94a3b8;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
     cursor: pointer;
-    margin: 0 4px;
-    transition: 0.3s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .range-picker button:hover {
-    background: #00ffcc;
-    color: #0b0e14;
+    color: #ffffff;
 }
 
-canvas {
-    background: #07090e;
+.range-picker button.active, 
+.range-picker button:focus {
+    background: rgba(0, 255, 204, 0.12);
+    color: #00ffcc;
+    box-shadow: 0 2px 12px rgba(0, 255, 204, 0.15);
+}
+
+/* Radar Canvas Glow */
+#radarCanvas {
+    background: radial-gradient(circle, rgba(10, 15, 26, 0.9) 0%, rgba(5, 7, 10, 0.95) 100%);
     border-radius: 50%;
-    margin: 20px 0;
-    border: 2px solid #00ffcc44;
+    border: 1px solid rgba(0, 255, 204, 0.15);
+    box-shadow: 
+        0 0 30px rgba(0, 255, 204, 0.08),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+    margin: 5px 0 20px 0;
+}
+
+/* Status & Inputs */
+.status-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.status-panel p {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
 .status-panel input {
-    width: 90%;
-    padding: 10px;
-    background: #1a2332;
-    border: 1px solid #2a364f;
-    border-radius: 8px;
-    color: #fff;
-    margin-top: 100px text-align center;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 0.88rem;
+    outline: none;
+    transition: all 0.3s ease;
 }
 
+.status-panel input::placeholder {
+    color: #475569;
+}
+
+.status-panel input:focus {
+    border-color: rgba(0, 255, 204, 0.5);
+    background: rgba(0, 255, 204, 0.02);
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.1);
+}
+
+/* User Cards Feed */
 .cards-container {
-    margin-top: 15px;
-    max-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 190px;
     overflow-y: auto;
+    padding-right: 4px;
 }
 
+/* Custom Sleek Scrollbar */
+.cards-container::-webkit-scrollbar {
+    width: 4px;
+}
+.cards-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Anonymous User Card */
 .user-card {
-    background: #1a2332;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    border-left: 3px solid #ff0055;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 14px 16px;
     text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+.user-card:hover {
+    border-color: rgba(255, 0, 85, 0.3);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.user-info p {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.user-info .distance {
+    font-size: 0.75rem;
+    color: #00ffcc;
+    margin-left: 6px;
+    font-weight: 500;
+}
+
+.user-info .hint {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 3px;
+    font-weight: 400;
+}
+
+/* Glowing Interested Button */
 .user-card button {
-    background: #ff0055;
+    background: linear-gradient(135deg, #ff0055 0%, #ff5500 100%);
+    color: #ffffff;
     border: none;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 10px;
     cursor: pointer;
-    margin-top: 4px;
+    box-shadow: 0 4px 15px rgba(255, 0, 85, 0.3);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.user-card button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 0, 85, 0.5);
+}
+
+.user-card button:active {
+    transform: scale(0.96);
 }
