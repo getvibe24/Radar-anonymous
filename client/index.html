@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Anonymous</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="radar-container">
+        <h2>NEARBY RADAR</h2>
+        <div class="range-picker">
+            <button onclick="setRadius(30)">30m</button>
+            <button onclick="setRadius(100)">100m</button>
+            <button onclick="setRadius(300)">300m</button>
+        </div>
+
+        <canvas id="radarCanvas" width="350" height="350"></canvas>
+
+        <div class="status-panel">
+            <p id="status">Connecting GPS & Server...</p>
+            <input type="text" id="userHint" placeholder="Set your vibe/hint (e.g. Black hoodie @ Cafe)" onchange="sendLocation()">
+        </div>
+
+        <div id="userCards" class="cards-container"></div>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3000');
+        const canvas = document.getElementById('radarCanvas');
+        const ctx = canvas.getContext('2d');
+        let maxRadius = 100; // default meters
+        let nearbyUsers = [];
+        let sweepAngle = 0;
+
+        // Canvas Sweeping Radar Animation
+        function drawRadar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const radius = 150;
+
+            // Background Circles (Rings)
+            ctx.strokeStyle = '#00ffcc33';
+            ctx.lineWidth = 1;
+            [0.3, 0.6, 1].forEach(r => {
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius * r, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+
+            // Sweeping Line
+            sweepAngle += 0.03;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, sweepAngle, sweepAngle + 0.2);
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.15)';
+            ctx.fill();
+
+            // Center User Dot
+            ctx.fillStyle = '#00ffcc';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Plot Anonymous Blips
+            nearbyUsers.forEach((user, index) => {
+                if(user.distance <= maxRadius) {
+                    const normalizedDist = (user.distance / maxRadius) * radius;
+                    const angle = (index * 1.5) + 0.5; // Distribute dots around circle
+                    const x = cx + normalizedDist * Math.cos(angle);
+                    const y = cy + normalizedDist * Math.sin(angle);
+
+                    ctx.fillStyle = '#ff0055';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ff0055';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            });
+
+            requestAnimationFrame(drawRadar);
+        }
+        drawRadar();
+
+        function setRadius(r) {
+            maxRadius = r;
+            sendLocation();
+        }
+
+        function sendLocation() {
+            const hint = document.getElementById('userHint').value;
+            navigator.geolocation.getCurrentPosition((pos) => {
+                document.getElementById('status').innerText = `Active Radar Range: ${maxRadius}m`;
+                socket.emit('update_location', {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    hint: hint
+                });
+            }, () => {
+                document.getElementById('status').innerText = "Geolocation Denied/Unavailable";
+            });
+        }
+
+        socket.on('nearby_radar_users', (users) => {
+            nearbyUsers = users;
+            const container = document.getElementById('userCards');
+            container.innerHTML = '';
+            
+            users.forEach(u => {
+                if(u.distance <= maxRadius) {
+                    container.innerHTML += `
+                        <div class="user-card">
+                            <p><strong>Anon #${u.anonId}</strong> (${u.distance}m away)</p>
+                            <p class="hint">"${u.hint}"</p>
+                            <button onclick="pingUser('${u.anonId}')">Interested 🔥</button>
+                        </div>
+                    `;
+                }
+            });
+        });
+
+        function pingUser(anonId) {
+            socket.emit('send_interest', anonId);
+            alert("Signal Sent Anonymously!");
+        }
+
+        socket.on('received_interest', (data) => {
+            alert("⚡ " + data.message);
+        });
+
+        setInterval(sendLocation, 10000); // Refresh position every 10s
+    </script>
+</body>
+</html>
